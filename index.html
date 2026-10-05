@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GeoFacing</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <div id="modulo-mapa" class="mapa-fondo">
+        <div class="mapa-placeholder"></div>
+    </div>
+
+    <div class="contenedor-buscador">
+        <div class="buscador-flotante">
+            <input type="text" id="input-busqueda" placeholder="Buscar salón, profesor, materia..." autocomplete="off">
+            <button id="btn-buscar">🔍</button>
+        </div>
+        <div id="sugerencias-box" class="sugerencias-box oculto"></div>
+    </div>
+
+    <aside id="modulo-resultados" class="panel-emergente">
+        <!-- Botón lateral estilo Google Maps para ocultar/mostrar el panel -->
+        <button id="btn-minimizar-panel" class="btn-minimizar-lateral" onclick="alternarMinimizarPanel()" aria-label="Ocultar panel">‹</button>
+        <button id="btn-cerrar-panel" class="btn-cerrar">&times;</button>
+        <div class="panel-scroll">
+            <div id="contenido-panel"></div>
+            <div id="leyenda-panel" class="leyenda-seccion"></div>
+        </div>
+    </aside>
+
+    <div id="panel-info" class="panel-info">
+        <button id="btn-cerrar-info" class="btn-cerrar" aria-label="Cerrar">&times;</button>
+        <div id="info-tipo" class="info-tipo"></div>
+        <div id="info-nombre" class="info-nombre"></div>
+    </div>
+
+    <button id="btn-hamburguesa" class="btn-hamburguesa" aria-label="Abrir menú">
+        <div class="linea"></div>
+        <div class="linea"></div>
+        <div class="linea"></div>
+    </button>
+
+    <div id="panel-opciones" class="panel-opciones-drawer">
+        <div class="encabezado-drawer">
+            <h3>Opciones e Información</h3>
+            <button id="btn-cerrar-drawer" class="btn-cerrar-drawer">&times;</button>
+        </div>
+        <div class="contenido-drawer">
+            <div class="seccion-drawer">
+                <h4>🔎 Buscar en el mapa</h4>
+                <p class="subtexto-drawer">Elige qué quieres ubicar y púlsalo para resaltarlo en el mapa. «Salones libres» usa la hora de Venezuela (UTC-4).</p>
+                <div id="opciones-busqueda" class="opciones-busqueda"></div>
+                <button id="btn-resaltar" class="btn-consultar">Resaltar en el mapa</button>
+            </div>
+            <hr class="separador-drawer">
+            <div class="seccion-drawer">
+                <h4>ℹ️ Acerca de la Aplicación</h4>
+                <p class="subtexto-drawer">Sistema interactivo de consulta de horarios y ubicación para la Facultad de Ingeniería (UC).</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="overlay-drawer" class="overlay-drawer"></div>
+    <script src="app.js"></script>
+</body>
+</html>

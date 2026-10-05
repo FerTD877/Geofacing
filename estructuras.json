@@ -1,0 +1,329 @@
+{
+  "tipos": {
+    "escuela": {
+      "etiqueta": "Escuela",
+      "icono": "🎓"
+    },
+    "departamento": {
+      "etiqueta": "Departamento",
+      "icono": "🏛️"
+    },
+    "direccion": {
+      "etiqueta": "Dirección",
+      "icono": "🗂️"
+    },
+    "decanato": {
+      "etiqueta": "Decanato",
+      "icono": "🏢"
+    },
+    "cantina": {
+      "etiqueta": "Cantina",
+      "plural": "Cantinas",
+      "icono": "🍽️️",
+      "buscable": true
+    },
+    "bano": {
+      "etiqueta": "Baños",
+      "plural": "Baños",
+      "icono": "🚻",
+      "buscable": true
+    },
+    "papeleria": {
+      "etiqueta": "Papelería",
+      "plural": "Papelerías",
+      "icono": "📄",
+      "buscable": true
+    },
+    "otro": {
+      "etiqueta": "Lugar",
+      "icono": "📍"
+    }
+  },
+  "salonesExcluidosLibres": [
+    "AUDITORIO", "DECANATO", "SD3", "SD2", "SD1", "JLN", "AD9", "AD4", "AD3", "EDIFICIO", "LM1", "HP2", "LBX", "FALTA", "LAB.Q", "DEP2"
+  ],
+  "estructuras": [
+    {
+      "nombre": "Escuela de Industrial",
+      "tipo": "escuela",
+      "ids": ["ESC.I"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Eléctrica",
+      "tipo": "escuela",
+      "ids": ["ESC.E.1", "ESC.E.2"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Eléctrica - Edificio 1",
+      "tipo": "escuela",
+      "ids": ["ESC.E.1"],
+      "salones": ["SIE2"]
+    },
+    {
+      "nombre": "Escuela de Eléctrica - Edificio 2",
+      "tipo": "escuela",
+      "ids": ["ESC.E.2"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Química",
+      "tipo": "escuela",
+      "ids": ["ESC.Q.1", "ESC.Q.2"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Química - Edificio 1",
+      "tipo": "escuela",
+      "ids": ["ESC.Q.1"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Química - Edificio 2",
+      "tipo": "escuela",
+      "ids": ["ESC.Q.2"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Mecánica",
+      "tipo": "escuela",
+      "ids": ["ESC.M"],
+      "salones": ["ANM"]
+    },
+    {
+      "nombre": "Escuela de Civil",
+      "tipo": "escuela",
+      "ids": ["ESC.C.1", "ESC.C.2", "ESC.C.3", "ESC.C.4"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Civil - Edificio 1",
+      "tipo": "escuela",
+      "ids": ["ESC.C.1"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Civil - Edificio 2",
+      "tipo": "escuela",
+      "ids": ["ESC.C.2"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Civil - Edificio 3",
+      "tipo": "escuela",
+      "ids": ["ESC.C.3"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Civil - Edificio 4",
+      "tipo": "escuela",
+      "ids": ["ESC.C.4"],
+      "salones": []
+    },
+    {
+      "nombre": "Escuela de Telecomunicaciones",
+      "tipo": "escuela",
+      "ids": ["ESC.T"],
+      "salones": []
+    },
+    {
+      "nombre": "Departamento de Computación",
+      "tipo": "departamento",
+      "ids": ["DEP.C"],
+      "salones": []
+    },
+    {
+      "nombre": "Departamento de Física",
+      "tipo": "departamento",
+      "ids": ["DEP.F"],
+      "salones": []
+    },
+    {
+      "nombre": "Departamento de Química",
+      "tipo": "departamento",
+      "ids": ["DEP.Q"],
+      "salones": []
+    },
+    {
+      "nombre": "Departamento de Humanidades",
+      "tipo": "departamento",
+      "ids": ["DEP.H"],
+      "salones": ["SH01", "SH02", "SH03"]
+    },
+    {
+      "nombre": "Departamento de Matemática",
+      "tipo": "departamento",
+      "ids": ["DEP.M"],
+      "salones": []
+    },
+    {
+      "nombre": "Departamento de Idiomas",
+      "tipo": "departamento",
+      "ids": ["DEP.I"],
+      "salones": ["AID"]
+    },
+    {
+      "nombre": "Departamento de Dibujo",
+      "tipo": "departamento",
+      "ids": ["DEP.D"],
+      "salones": []
+    },
+    {
+      "nombre": "Dirección de Estudios Básicos",
+      "tipo": "direccion",
+      "ids": ["DIR.EST.BAS"],
+      "salones": []
+    },
+    {
+      "nombre": "Dirección de Asuntos Estudiantiles",
+      "tipo": "direccion",
+      "ids": ["DAE"],
+      "salones": []
+    },
+    {
+      "nombre": "Salón de Usos Multiples: Jose Luis Nazar",
+      "tipo": "Lugar",
+      "ids": ["JLN"],
+      "salones": []
+    },
+    {
+      "nombre": "Decanato",
+      "tipo": "decanato",
+      "ids": ["DECANATO"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN1"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN2"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN3"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN4"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN5"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN6"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN7"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN8"],
+      "salones": []
+    },
+    {
+      "nombre": "Cantina",
+      "tipo": "cantina",
+      "ids": ["CAN9"],
+      "salones": []
+    },
+    {
+      "nombre": "La Chilena",
+      "tipo": "papeleria",
+      "ids": ["CHILENA"],
+      "salones": []
+    },
+    {
+      "nombre": "El Catire",
+      "tipo": "papeleria",
+      "ids": ["CATIRE"],
+      "salones": []
+    },
+    {
+      "nombre": "Baño",
+      "tipo": "bano",
+      "ids": ["B1"],
+      "salones": []
+    },
+    {
+      "nombre": "Baño",
+      "tipo": "bano",
+      "ids": ["B2"],
+      "salones": []
+    },
+    {
+      "nombre": "Baño",
+      "tipo": "bano",
+      "ids": ["B3"],
+      "salones": []
+    },
+    {
+      "nombre": "SuperPapelera",
+      "tipo": "papeleria",
+      "ids": ["SUPERPAPELERA"],
+      "salones": []
+    },
+    {
+      "nombre": "Impresiones",
+      "tipo": "papeleria",
+      "ids": ["IMPRESIONES"],
+      "salones": []
+    },
+    {
+      "nombre": "Publicaciones",
+      "tipo": "papeleria",
+      "ids": ["PUBLICACIONES"],
+      "salones": []
+    },
+    {
+      "nombre": "Coordinación de Cultura",
+      "tipo": "otro",
+      "ids": ["COORD.C"],
+      "salones": []
+    },
+    {
+      "nombre": "Club de Ajedrez",
+      "tipo": "otro",
+      "ids": ["AJEDREZ"],
+      "salones": []
+    },
+    {
+      "nombre": "Facultad de Medicina",
+      "tipo": "otro",
+      "ids": ["FAC.M"],
+      "salones": []
+    },
+    {
+      "nombre": "Mantenimiento",
+      "tipo": "otro",
+      "ids": ["MANTENIMIENTO"],
+      "salones": []
+    },
+    {
+      "nombre": "Uniformes",
+      "tipo": "otro",
+      "ids": ["UNIFORMES"],
+      "salones": []
+    }
+  ]
+}
