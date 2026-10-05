@@ -1,27 +1,20 @@
-// ==========================================
-// CONFIGURACIÓN GLOBAL Y PARÁMETROS
-// ==========================================
-const MODO_PRUEBA = false;
-const PROBAR_DIA = "MA";
-const PROBAR_BLOQUE = "0940";
-
-// --- CONFIGURACIÓN DE VISTA INICIAL Y LÍMITES ---
-// Coordenadas del mapa: píxeles del lienzo del SVG (2000 x 1818), con (0,0) = esquina superior izquierda.
-// Tip: con el mapa abierto, ejecuta  vistaActual()  en la consola del navegador para
-// leer el centro y el zoom que estás viendo y copiarlos aquí.
 const VISTA_INICIAL_CONFIG = {
-    zoom: 2,         // 1 = mapa completo (zoom mínimo); 3 = triple; etc.
-    enfocarId: null, // id de un elemento del SVG (ej. 'AD4') para iniciar centrado en él; tiene prioridad sobre 'centro'
-    centro: { x: 1091, y: 626 }  // zona del BOULEVARD. null = centro del mapa
+    zoom: 2,
+    enfocarId: null,
+    centro: { x: 1091, y: 626 }
+};
+
+const ENCUADRE_CONFIG = {
+    margen: 70,
+    zoomBusqueda: 2,
+    zoomMaximo: 3,
+    duracion: 600
 };
 
 const LIMITES_CONFIG = {
-    modoMinimo: 'cubrir', // 'cubrir': nunca hay bordes vacíos (puede recortar un eje)
-                          // 'contener': se ve el mapa completo, con márgenes en un eje
-    zoomMaximo: 8,        // escala máxima (píxeles de pantalla por unidad del SVG)
-    velocidadRueda: 0.004,// sensibilidad del zoom con la rueda / trackpad
-    // Los límites son exactamente el viewBox del SVG (el marco negro coincide con él).
-    // Recorte opcional extra, en px del lienzo, por si algún día quieres acotar más el mapa.
+    modoMinimo: 'cubrir',
+    zoomMaximo: 8,
+    velocidadRueda: 0.004,
     recorte: { izq: 0, der: 0, arriba: 0, abajo: 0 }
 };
 
@@ -31,12 +24,10 @@ let salonesRegistradosEnMapa = new Set();
 let salonesExcluidosSet = new Set();    
 const escuelaPorIdEdificio = new Map();
 
-// Estructuras que no son salones (escuelas, departamentos, cantinas...), definidas en estructuras.json
 let estructurasConfig = { tipos: {}, estructuras: [] };
-const estructuraPorId = new Map();     // id del elemento SVG -> estructura
-const estructuraPorSalon = new Map();  // salón sin elemento propio (dentro de una escuela...) -> estructura
+const estructuraPorId = new Map();
+const estructuraPorSalon = new Map();
 
-// Dimensiones y transformación del mapa
 let anchoRealSVG = 0;
 let altoRealSVG = 0;
 let anchoContenedor = 0;
@@ -51,8 +42,7 @@ let contenedorMapa = null;
 let svgEl = null;
 let renderPendiente = false;
 
-// Gestos (Pointer Events: ratón, táctil y lápiz con el mismo código)
-const punteros = new Map();   // pointerId -> {x, y}
+const punteros = new Map();
 let inicioToque = { x: 0, y: 0 };
 let huboArrastre = false;
 let huboMultitouch = false;
@@ -60,11 +50,9 @@ let ultimoPellizco = null;
 
 let salonActivoActual = null;
 
-// Caches para no recorrer el DOM en cada acción
-const elementosSalon = new Map();      // id -> elemento SVG
-const elementosResaltados = new Set(); // elementos con clase de resaltado activa
+const elementosSalon = new Map();
+const elementosResaltados = new Set();
 
-// --- 0. CARGA DINÁMICA DEL MAPA SVG (FETCH) ---
 async function cargarSVGMapa() {
     const contenedor = document.querySelector('.mapa-placeholder');
     try {
@@ -76,7 +64,6 @@ async function cargarSVGMapa() {
         if (svgElemento) svgElemento.id = 'svg1';
         
         registrarSalonesDinamicos();
-        console.log(`✅ SVG cargado. Registrados ${salonesRegistradosEnMapa.size} espacios interactivos.`);
     } catch (error) {
         console.error("❌ Error al cargar mapageofacing.svg via fetch:", error);
     }
@@ -91,13 +78,12 @@ function registrarSalonesDinamicos() {
         if (/[A-Z]/.test(id) && id === id.toUpperCase() && id !== 'SVG1') {
             salonesRegistradosEnMapa.add(id);
             elementosSalon.set(id, el);
-            el.classList.add('salon'); // la transición CSS solo se aplica a estos nodos
+            el.classList.add('salon');
             el.style.cursor = 'pointer';
         }
     });
 }
 
-// --- 1. CARGA Y PROCESAMIENTO DE DATOS ---
 async function cargarHorarios() {
     try {
         const respuesta = await fetch('./horarios.json');
@@ -129,7 +115,6 @@ function procesarSugerencias() {
     listaSugerencias = Array.from(mapa.values());
 }
 
-// --- 2. GENERACIÓN DE TABLA Y LEYENDA ---
 const DIAS_CLAVE = ["LU", "MA", "MI", "JU", "VI", "SA"];
 const NOMBRES_DIAS = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
 const BLOQUES_HORAS = ["0800", "0850", "0940", "1030", "1120", "1210", "1300", "1350", "1440", "1530", "1620", "1710", "1800", "1850", "1940"];
@@ -186,20 +171,17 @@ function generarLeyendaHTML(mapaLeyenda) {
     contenedorLeyenda.innerHTML = htmlLeyenda;
 }
 
-// --- 3. GESTIÓN DE PANELES Y BÚSQUEDA ---
-// --- GESTIÓN DE PANELES CON EL BOTÓN "ATRÁS" DEL MÓVIL ---
-
 function abrirPanelResultados(htmlContenido) {
     document.getElementById('contenido-panel').innerHTML = htmlContenido;
     document.getElementById('panel-info').classList.remove('activo');
     const panel = document.getElementById('modulo-resultados');
-    
-    if (!panel.classList.contains('activo')) {
-        history.pushState({ panelAbierto: true }, '');
-    }
     panel.classList.add('activo');
     panel.classList.remove('minimizado');
-    
+    restablecerBotonMinimizar();
+    abrirCapaHistorial();
+}
+
+function restablecerBotonMinimizar() {
     const btn = document.getElementById('btn-minimizar-panel');
     if (btn) {
         btn.textContent = '‹';
@@ -207,49 +189,33 @@ function abrirPanelResultados(htmlContenido) {
     }
 }
 
-// Interceptamos el evento popstate (cuando el usuario presiona "Atrás" en el celular)
-window.addEventListener('popstate', (event) => {
-    const panelResultados = document.getElementById('modulo-resultados');
-    const panelDrawer = document.getElementById('panel-opciones');
-    
-    if (panelResultados.classList.contains('activo')) {
-        cerrarPanelResultados();
-    } else if (panelDrawer && panelDrawer.classList.contains('activo')) {
-        cerrarMenuDrawer();
-    }
-});
-
-// Función para ocultar/mostrar el panel lateralmente (Estilo Google Maps)
 function alternarMinimizarPanel() {
     const panel = document.getElementById('modulo-resultados');
     panel.classList.toggle('minimizado');
     
-    // Cambia la flecha de dirección según el estado
     const btn = document.getElementById('btn-minimizar-panel');
     if (panel.classList.contains('minimizado')) {
-        btn.textContent = '›'; // Apunta hacia afuera para abrir
+        btn.textContent = '›';
         btn.setAttribute('aria-label', 'Mostrar panel');
     } else {
-        btn.textContent = '‹'; // Apunta hacia adentro para cerrar
+        btn.textContent = '‹';
         btn.setAttribute('aria-label', 'Ocultar panel');
     }
 }
 
-// Oculta los paneles (horario e info de estructura) sin tocar el resaltado del mapa
 function ocultarPaneles() {
-    document.getElementById('modulo-resultados').classList.remove('activo');
+    const panel = document.getElementById('modulo-resultados');
+    panel.classList.remove('activo', 'minimizado');
+    restablecerBotonMinimizar();
     document.getElementById('panel-info').classList.remove('activo');
     document.getElementById('input-busqueda').value = '';
     salonActivoActual = null;
+    sincronizarHistorial();
 }
 
 function cerrarPanelResultados() {
     ocultarPaneles();
     limpiarResaltadoMapa();
-    // Si hay un estado en el historial creado por el panel, podemos retrocederlo o dejarlo limpio
-    if (history.state && history.state.panelAbierto) {
-        history.back();
-    }
 }
 
 function normalizarTextoBusqueda(texto) {
@@ -258,7 +224,7 @@ function normalizarTextoBusqueda(texto) {
     return texto.toUpperCase().replace(/\b(10|[1-9])\b/g, (m) => eq[m] || m);
 }
 
-function ejecutarBusqueda(texto) {
+function ejecutarBusqueda(texto, opciones = {}) {
     const rawInput = (texto || document.getElementById('input-busqueda').value).trim();
     const busqueda = normalizarTextoBusqueda(rawInput);
     
@@ -269,10 +235,9 @@ function ejecutarBusqueda(texto) {
         return; 
     }
 
-    // Estructura (escuela, departamento, cantina...): ventana pequeña con el nombre, sin horario
-    const estructuraExacta = estructurasConfig.estructuras.find(e => plegar(e.nombre) === plegar(rawInput));
-    if (estructuraExacta) {
-        mostrarInfoEstructura(estructuraExacta);
+    const estructurasExactas = estructurasConfig.estructuras.filter(e => plegar(e.nombre) === plegar(rawInput));
+    if (estructurasExactas.length) {
+        mostrarInfoEstructura(estructurasExactas, opciones);
         return;
     }
 
@@ -299,20 +264,20 @@ function ejecutarBusqueda(texto) {
         });
     }
 
-    // Sin horarios: ¿coincide parcialmente con alguna estructura?
     if (resultados.length === 0) {
         const parciales = estructurasConfig.estructuras.filter(e => plegar(e.nombre).includes(plegar(rawInput)));
-        if (parciales.length === 1) { mostrarInfoEstructura(parciales[0]); return; }
-        if (parciales.length > 1) { mostrarSugerencias(rawInput); return; }
+        const nombresDistintos = new Set(parciales.map(e => plegar(e.nombre)));
+        if (nombresDistintos.size === 1) { mostrarInfoEstructura(parciales, opciones); return; }
+        if (nombresDistintos.size > 1) { mostrarSugerencias(rawInput); return; }
     }
 
     ocultarSugerencias();
     resultados.forEach(b => { if (b[6]) salonesAEnfocar.add(b[6].trim().toUpperCase()); });
     abrirPanelResultados(generarTablaHorario(resultados));
     resaltarSalonesEnMapa(Array.from(salonesAEnfocar));
+    if (opciones.encuadrar !== false) encuadrarElementos(elementosResaltados);
 }
 
-// --- Contorno resaltado en una capa superior (evita que los salones vecinos tapen el borde) ---
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let capaResaltado = null;
 
@@ -321,23 +286,24 @@ function agregarContornoSuperior(el, clase) {
     if (!svg || !el.parentNode || !el.parentNode.getCTM) return;
     if (!capaResaltado || !capaResaltado.isConnected) {
         capaResaltado = document.createElementNS(SVG_NS, 'g');
-        capaResaltado.setAttribute('pointer-events', 'none'); // los toques pasan al salón original
+        capaResaltado.setAttribute('pointer-events', 'none');
         svg.appendChild(capaResaltado);
     }
     const ctmPadre = el.parentNode.getCTM();
     const ctmCapa = capaResaltado.getCTM();
     if (!ctmPadre || !ctmCapa) return;
 
-    // Misma posición que el original, aunque sus grupos tengan transformaciones (scale, matrix...)
     const m = ctmCapa.inverse().multiply(ctmPadre);
     const grupo = document.createElementNS(SVG_NS, 'g');
     grupo.setAttribute('transform', `matrix(${m.a} ${m.b} ${m.c} ${m.d} ${m.e} ${m.f})`);
 
-    const contorno = el.cloneNode(false); // solo la forma, sin hijos
-    contorno.removeAttribute('id');
-    contorno.removeAttribute('style');
-    contorno.setAttribute('class', clase);
-    grupo.appendChild(contorno);
+    [clase.replace('contorno', 'halo'), clase].forEach(claseCapa => {
+        const forma = el.cloneNode(false);
+        forma.removeAttribute('id');
+        forma.removeAttribute('style');
+        forma.setAttribute('class', claseCapa);
+        grupo.appendChild(forma);
+    });
     capaResaltado.appendChild(grupo);
 }
 
@@ -353,7 +319,7 @@ function resaltarSalonesEnMapa(listaSalones) {
     limpiarResaltadoMapa();
     listaSalones.forEach(idSalon => {
         if (elementosSalon.has(idSalon)) { marcarSalon(idSalon, 'salon-resaltado'); return; }
-        const est = estructuraPorSalon.get(idSalon); // salón dentro de una escuela/departamento sin elemento propio
+        const est = estructuraPorSalon.get(idSalon);
         if (est) est.ids.forEach(id => marcarSalon(id, 'salon-resaltado'));
         else marcarSalon(idSalon, 'salon-resaltado');
     });
@@ -362,6 +328,7 @@ function resaltarSalonesEnMapa(listaSalones) {
 function enfocarSalonDesdeTabla(idSalon) {
     if (!idSalon) return;
     resaltarSalonesEnMapa([idSalon.toUpperCase()]);
+    encuadrarElementos(elementosResaltados);
 }
 
 function limpiarResaltadoMapa() {
@@ -370,14 +337,12 @@ function limpiarResaltadoMapa() {
     if (capaResaltado) capaResaltado.textContent = '';
 }
 
-// --- 4. INTERACCIÓN DIRECTA MAPA Y BUSCADOR ---
 function inicializarBuscador() {
     document.getElementById('btn-buscar').addEventListener('click', () => ejecutarBusqueda());
     document.getElementById('input-busqueda').addEventListener('input', (e) => mostrarSugerencias(e.target.value));
     document.getElementById('input-busqueda').addEventListener('keypress', (e) => { if (e.key === 'Enter') ejecutarBusqueda(); });
     document.getElementById('btn-cerrar-panel').addEventListener('click', cerrarPanelResultados);
     document.getElementById('btn-cerrar-info').addEventListener('click', cerrarPanelResultados);
-    
 }
 
 function mostrarSugerencias(filtro) {
@@ -385,8 +350,8 @@ function mostrarSugerencias(filtro) {
     const busqueda = normalizarTextoBusqueda(filtro.trim());
     if (!busqueda) { box.classList.add('oculto'); return; }
     
-    const q = plegar(filtro);          // sin acentos, para estructuras ("cantina 1", "direccion")
-    const qRomano = plegar(busqueda);  // con números romanos, para materias
+    const q = plegar(filtro);
+    const qRomano = plegar(busqueda);
     const coinc = listaSugerencias.filter(item =>
         item.tipo === 'Estructura' ? plegar(item.texto).includes(q) : plegar(item.texto).includes(qRomano)
     ).slice(0, 6);
@@ -404,28 +369,19 @@ function mostrarSugerencias(filtro) {
 
 function ocultarSugerencias() { document.getElementById('sugerencias-box').classList.add('oculto'); }
 
-// --- 5. ENCUADRE, ZOOM Y PAN/DRAG (Pointer Events + clamping) ---
-
-// Desfase entre el sistema de coordenadas del lienzo original y el área recortada (0 si no hay recorte)
 let desfaseX = 0;
 let desfaseY = 0;
-let bboxOriginal = { w: 0, h: 0 };
-let panelCalibrar = null;
-let cursorCalibrar = null;
 
-// Los límites son el viewBox original del SVG (no getBBox(), que incluye trazos que sobresalen del marco).
-// El SVG de Inkscape usa mm en el viewBox y px en width/height: se trabaja en px (1 unidad = 1 px a escala 1).
 function medirSVG() {
     const vb = svgEl.viewBox.baseVal;
     const anchoPx = parseFloat(svgEl.getAttribute('width')) || 2000;
     const altoPx = parseFloat(svgEl.getAttribute('height')) || 1818;
     const vx = vb.x || 0, vy = vb.y || 0;
     const vw = vb.width || anchoPx, vh = vb.height || altoPx;
-    const kx = vw / anchoPx;   // unidades del viewBox por px
+    const kx = vw / anchoPx;
     const ky = vh / altoPx;
     const r = LIMITES_CONFIG.recorte;
 
-    bboxOriginal = { w: anchoPx, h: altoPx };
     desfaseX = r.izq;
     desfaseY = r.arriba;
     anchoRealSVG = Math.max(1, anchoPx - r.izq - r.der);
@@ -450,7 +406,6 @@ function limitarEscala(e) {
     return Math.min(escalaMaximaPermitida, Math.max(escalaMinimaPermitida, e));
 }
 
-// Límites herméticos: el mapa nunca deja ver fondo vacío (o se centra si es más chico que la pantalla).
 function limitarTraslacion() {
     const w = anchoRealSVG * escala;
     const h = altoRealSVG * escala;
@@ -466,7 +421,6 @@ function establecerVistaInicial() {
     const cfg = VISTA_INICIAL_CONFIG;
     const elFoco = cfg.enfocarId && document.getElementById(cfg.enfocarId);
     if (elFoco) {
-        // El SVG aún no tiene transform: 1 unidad = 1 px desde su esquina, así que el rect del elemento ya está en unidades del mapa recortado
         const re = elFoco.getBoundingClientRect();
         const rs = svgEl.getBoundingClientRect();
         c = { x: re.left + re.width / 2 - rs.left, y: re.top + re.height / 2 - rs.top };
@@ -477,20 +431,20 @@ function establecerVistaInicial() {
     transY = altoContenedor / 2 - c.y * escala;
 }
 
-// El estado se corrige al instante; el DOM se escribe como máximo una vez por frame.
+function renderizarAhora() {
+    svgEl.style.transform = `translate(${transX}px, ${transY}px) scale(${escala})`;
+}
+
 function aplicarTransformacionSVG() {
     limitarTraslacion();
     if (renderPendiente) return;
     renderPendiente = true;
     requestAnimationFrame(() => {
         renderPendiente = false;
-        svgEl.style.transform = `translate(${transX}px, ${transY}px) scale(${escala})`;
-        if (panelCalibrar) actualizarPanelCalibrar();
+        renderizarAhora();
     });
 }
 
-// Zoom manteniendo fijo el punto (px, py) de la pantalla. Primero se limita la escala y luego
-// se calcula la traslación, así el punto focal y los límites nunca se contradicen.
 function zoomHacia(px, py, nuevaEscala) {
     const s = limitarEscala(nuevaEscala);
     const r = s / escala;
@@ -511,9 +465,7 @@ function inicializarPanZoom() {
     if (!contenedorMapa || !svgEl) return;
 
     medirSVG();
-    if (new URLSearchParams(location.search).has('calibrar')) iniciarCalibrador();
 
-    // ResizeObserver: mide el contenedor solo cuando cambia (sin leer el layout en cada frame)
     new ResizeObserver(entries => {
         const { width, height } = entries[0].contentRect;
         if (!width || !height) return;
@@ -530,19 +482,20 @@ function inicializarPanZoom() {
         aplicarTransformacionSVG();
     }).observe(contenedorMapa);
 
-    // Rueda / trackpad: zoom exponencial hacia el cursor
     contenedorMapa.addEventListener('wheel', (e) => {
         e.preventDefault();
+        cancelarAnimacionVista();
         let dy = e.deltaY;
-        if (e.deltaMode === 1) dy *= 16;        // líneas -> px (Firefox)
-        else if (e.deltaMode === 2) dy *= 400;  // páginas -> px
-        dy = Math.max(-120, Math.min(120, dy)); // evita saltos bruscos
+        if (e.deltaMode === 1) dy *= 16;
+        else if (e.deltaMode === 2) dy *= 400;
+        dy = Math.max(-120, Math.min(120, dy));
         const rect = contenedorMapa.getBoundingClientRect();
         zoomHacia(e.clientX - rect.left, e.clientY - rect.top, escala * Math.exp(-dy * LIMITES_CONFIG.velocidadRueda));
     }, { passive: false });
 
     contenedorMapa.addEventListener('pointerdown', (e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
+        cancelarAnimacionVista();
         contenedorMapa.setPointerCapture(e.pointerId);
         punteros.set(e.pointerId, { x: e.clientX, y: e.clientY });
         if (punteros.size === 1) {
@@ -569,7 +522,6 @@ function inicializarPanZoom() {
             transY += dy;
             aplicarTransformacionSVG();
         } else if (punteros.size >= 2) {
-            // Pellizco incremental: desplaza por el movimiento del centro y escala hacia él
             const nuevo = datosPellizco();
             if (ultimoPellizco && ultimoPellizco.dist > 0 && nuevo.dist > 0) {
                 const rect = contenedorMapa.getBoundingClientRect();
@@ -593,11 +545,9 @@ function inicializarPanZoom() {
     contenedorMapa.addEventListener('pointercancel', terminarPuntero);
 }
 
-// Toque/clic sin arrastre: selecciona un salón o, si fue en vacío, cierra el panel.
 function manejarToqueEnMapa(x, y) {
     const el = document.elementFromPoint(x, y);
     if (!el) return;
-    // Sube por los ancestros hasta hallar un salón registrado (los paths internos de Inkscape traen ids propios)
     for (let nodo = el; nodo && nodo !== svgEl; nodo = nodo.parentElement) {
         if (salonesRegistradosEnMapa.has(nodo.id)) {
             seleccionarSalon(nodo.id);
@@ -612,13 +562,12 @@ function procesarEstructuras() {
     estructuraPorSalon.clear();
     escuelaPorIdEdificio.clear();
 
-    // Primero identificamos las escuelas globales (las que tienen múltiples ids o nombres limpios sin "- Edificio")
     const escuelasGlobales = estructurasConfig.estructuras.filter(e => !e.nombre.includes(" - Edificio"));
 
     estructurasConfig.estructuras.forEach(est => {
         est.ids = (est.ids || []).filter(id => {
             const el = document.getElementById(id);
-            if (!el) { console.warn(`⚠️ estructuras.json: no existe el id "${id}" en el SVG (${est.nombre})`); return false; }
+            if (!el) return false;
             if (!salonesRegistradosEnMapa.has(id)) {
                 salonesRegistradosEnMapa.add(id);
                 elementosSalon.set(id, el);
@@ -631,20 +580,16 @@ function procesarEstructuras() {
         est.ids.forEach(id => {
             estructuraPorId.set(id, est);
             
-            // Si este edificio pertenece a una escuela con varios edificios, 
-            // asociamos su ID al objeto de la escuela global correspondiente para resaltarlos todos juntos al tocarlo.
             const escuelaGlobal = escuelasGlobales.find(g => g.tipo === 'escuela' && g.ids.includes(id) && g.nombre !== est.nombre);
             if (escuelaGlobal) {
                 escuelaPorIdEdificio.set(id, escuelaGlobal);
             }
         });
 
-        // Vinculamos los salones específicos a este edificio en particular
         (est.salones || []).forEach(s => estructuraPorSalon.set(String(s).trim().toUpperCase(), est));
     });
 }
 
-// Al tocar un elemento directamente en el mapa
 function seleccionarSalon(idSalon) {
     const panelActivo = document.getElementById('modulo-resultados').classList.contains('activo') ||
                         document.getElementById('panel-info').classList.contains('activo');
@@ -655,67 +600,158 @@ function seleccionarSalon(idSalon) {
     
     salonActivoActual = idSalon;
 
-    // PRIORIDAD 1: Si el ID pertenece a un edificio de una escuela múltiple, 
-    // mostramos la escuela global y resaltamos TODOS sus edificios a la vez.
     const escuelaGlobal = escuelaPorIdEdificio.get(idSalon);
     if (escuelaGlobal) {
-        mostrarInfoEstructura(escuelaGlobal);
+        mostrarInfoEstructura(escuelaGlobal, { encuadrar: false });
         return;
     }
 
-    // PRIORIDAD 2: Si es una estructura normal (departamento, cantina, decanato, etc.)
     const est = estructuraPorId.get(idSalon);
     if (est) {
-        mostrarInfoEstructura(est);
+        mostrarInfoEstructura(est, { encuadrar: false });
         return;
     }
 
-    // PRIORIDAD 3: Si es un salón suelto, ejecutamos la búsqueda normal
     document.getElementById('input-busqueda').value = idSalon;
-    ejecutarBusqueda(idSalon);
+    ejecutarBusqueda(idSalon, { encuadrar: false });
 }
 
-// Vista actual en coordenadas del SVG original (las mismas que usan 'centro' y 'recorte')
-function calcularVistaActual() {
-    return {
-        zoom: +(escala / escalaMinimaPermitida).toFixed(2),
-        centro: {
-            x: Math.round((anchoContenedor / 2 - transX) / escala + desfaseX),
-            y: Math.round((altoContenedor / 2 - transY) / escala + desfaseY)
+let animacionVista = null;
+
+function cancelarAnimacionVista() {
+    if (animacionVista) { cancelAnimationFrame(animacionVista); animacionVista = null; }
+}
+
+function animarVista(escalaFin, cx, cy, ax, ay) {
+    cancelarAnimacionVista();
+    escalaFin = limitarEscala(escalaFin);
+    const e0 = escala;
+    const c0x = (ax - transX) / e0;
+    const c0y = (ay - transY) / e0;
+    const sinAnimacion = ENCUADRE_CONFIG.duracion <= 0 ||
+        (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const t0 = performance.now();
+
+    const paso = (ahora) => {
+        const t = sinAnimacion ? 1 : Math.min(1, (ahora - t0) / ENCUADRE_CONFIG.duracion);
+        const k = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        escala = e0 * Math.pow(escalaFin / e0, k);
+        transX = ax - (c0x + (cx - c0x) * k) * escala;
+        transY = ay - (c0y + (cy - c0y) * k) * escala;
+        limitarTraslacion();
+        renderizarAhora();
+        animacionVista = t < 1 ? requestAnimationFrame(paso) : null;
+    };
+    animacionVista = requestAnimationFrame(paso);
+}
+
+function ventanaMasDensa(items, W, H) {
+    let mejor = [], mejorArea = Infinity;
+    for (const a of items) {
+        for (const b of items) {
+            const dentro = items.filter(i => i.cx >= a.cx && i.cx <= a.cx + W && i.cy >= b.cy && i.cy <= b.cy + H);
+            if (dentro.length < mejor.length) continue;
+            const area = (Math.max(...dentro.map(i => i.x1)) - Math.min(...dentro.map(i => i.x0))) *
+                         (Math.max(...dentro.map(i => i.y1)) - Math.min(...dentro.map(i => i.y0)));
+            if (dentro.length > mejor.length || area < mejorArea) { mejor = dentro; mejorArea = area; }
         }
+    }
+    return mejor;
+}
+
+function calcularEncuadre(items, anchoUtil, altoUtil) {
+    const caja = g => ({
+        x0: Math.min(...g.map(i => i.x0)), y0: Math.min(...g.map(i => i.y0)),
+        x1: Math.max(...g.map(i => i.x1)), y1: Math.max(...g.map(i => i.y1))
+    });
+    const escalaPara = g => {
+        const c = caja(g);
+        return Math.min(anchoUtil / Math.max(c.x1 - c.x0, 1), altoUtil / Math.max(c.y1 - c.y0, 1));
+    };
+    const escalaTope = Math.min(escalaMaximaPermitida, escalaMinimaPermitida * ENCUADRE_CONFIG.zoomMaximo);
+    const escalaComoda = Math.min(escalaTope, Math.max(escalaMinimaPermitida, escalaMinimaPermitida * ENCUADRE_CONFIG.zoomBusqueda));
+
+    let grupo = items;
+    if (items.length > 1 && escalaPara(items) < escalaComoda) {
+        grupo = ventanaMasDensa(items, anchoUtil / escalaComoda, altoUtil / escalaComoda);
+    }
+    const c = caja(grupo);
+    return {
+        escala: Math.min(escalaTope, Math.max(escalaMinimaPermitida, escalaPara(grupo))),
+        cx: (c.x0 + c.x1) / 2,
+        cy: (c.y0 + c.y1) / 2,
+        usados: grupo.length
     };
 }
-window.vistaActual = () => {
-    const r = calcularVistaActual();
-    console.log(JSON.stringify(r));
-    return r;
-};
 
-// Modo calibración: abre la página con  index.html?calibrar
-function iniciarCalibrador() {
-    panelCalibrar = document.createElement('div');
-    panelCalibrar.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:2000;background:rgba(0,0,0,.82);color:#fff;font:12px/1.5 monospace;padding:8px 12px;border-radius:8px;pointer-events:none;white-space:pre';
-    document.body.appendChild(panelCalibrar);
-    contenedorMapa.addEventListener('pointermove', (e) => { cursorCalibrar = { x: e.clientX, y: e.clientY }; actualizarPanelCalibrar(); });
-}
-
-function actualizarPanelCalibrar() {
-    const v = calcularVistaActual();
-    let lineaCursor = 'cursor: (mueve el mouse sobre el mapa)';
-    if (cursorCalibrar) {
-        const rect = contenedorMapa.getBoundingClientRect();
-        const mx = Math.round((cursorCalibrar.x - rect.left - transX) / escala + desfaseX);
-        const my = Math.round((cursorCalibrar.y - rect.top - transY) / escala + desfaseY);
-        lineaCursor = `cursor: x=${mx}  y=${my}`;
+function areaVisibleMapa() {
+    let x0 = 0;
+    const panel = document.getElementById('modulo-resultados');
+    if (panel.classList.contains('activo') && !panel.classList.contains('minimizado')) {
+        const borde = panel.offsetLeft + panel.offsetWidth;
+        if (borde < anchoContenedor * 0.6) x0 = borde + 10;
     }
-    panelCalibrar.textContent =
-        `${lineaCursor}\n` +
-        `vista:  zoom: ${v.zoom}, centro: { x: ${v.centro.x}, y: ${v.centro.y} }\n` +
-        `SVG original: ${Math.round(bboxOriginal.w)} x ${Math.round(bboxOriginal.h)}  |  recortado: ${Math.round(anchoRealSVG)} x ${Math.round(altoRealSVG)}`;
+    return { x0, y0: 80, x1: anchoContenedor, y1: altoContenedor };
 }
 
-// --- 5.5 ESTRUCTURAS (escuelas, departamentos, cantinas, baños...) ---
-// Quita acentos y pasa a mayúsculas para comparar textos ("Dirección" == "direccion")
+function encuadrarElementos(elementos) {
+    if (!svgEl || !mapaInicializado) return;
+    const lista = Array.from(elementos || []);
+    if (lista.length === 0) return;
+
+    cancelarAnimacionVista();
+    renderizarAhora();
+    const rc = contenedorMapa.getBoundingClientRect();
+    const items = [];
+    lista.forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (!r.width && !r.height) return;
+        const x0 = (r.left - rc.left - transX) / escala, x1 = (r.right - rc.left - transX) / escala;
+        const y0 = (r.top - rc.top - transY) / escala, y1 = (r.bottom - rc.top - transY) / escala;
+        items.push({ x0, y0, x1, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 });
+    });
+    if (items.length === 0) return;
+
+    const area = areaVisibleMapa();
+    const ancho = area.x1 - area.x0, alto = area.y1 - area.y0;
+    const m = Math.min(ENCUADRE_CONFIG.margen, 0.12 * Math.min(ancho, alto));
+    const enc = calcularEncuadre(items, Math.max(50, ancho - 2 * m), Math.max(50, alto - 2 * m));
+    animarVista(enc.escala, enc.cx, enc.cy, (area.x0 + area.x1) / 2, (area.y0 + area.y1) / 2);
+}
+
+const Historial = { sentinela: false, ignorar: 0, pendiente: null };
+
+function hayCapasAbiertas() {
+    return ['panel-opciones', 'modulo-resultados', 'panel-info']
+        .some(id => document.getElementById(id).classList.contains('activo'));
+}
+
+function abrirCapaHistorial() {
+    if (Historial.sentinela) return;
+    history.pushState({ geofacing: true }, '');
+    Historial.sentinela = true;
+}
+
+function sincronizarHistorial() {
+    clearTimeout(Historial.pendiente);
+    Historial.pendiente = setTimeout(() => {
+        if (Historial.sentinela && !hayCapasAbiertas()) {
+            Historial.sentinela = false;
+            Historial.ignorar++;
+            history.back();
+        }
+    }, 0);
+}
+
+window.addEventListener('popstate', () => {
+    if (Historial.ignorar > 0) { Historial.ignorar--; return; }
+    Historial.sentinela = false;
+    if (!hayCapasAbiertas()) return;
+    if (document.getElementById('panel-opciones').classList.contains('activo')) cerrarMenuDrawer();
+    else cerrarPanelResultados();
+    if (hayCapasAbiertas()) abrirCapaHistorial();
+});
+
 function plegar(texto) {
     return (texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
 }
@@ -727,28 +763,29 @@ async function cargarEstructuras() {
         const datos = await respuesta.json();
         
         estructurasConfig = { tipos: datos.tipos || {}, estructuras: datos.estructuras || [] };
-        
-        // Aquí es donde integramos la lectura de los salones excluidos del JSON
         salonesExcluidosSet = new Set((datos.salonesExcluidosLibres || []).map(s => s.trim().toUpperCase()));
     } catch (error) {
         console.error("❌ Error al cargar estructuras.json:", error);
     }
 }
 
-// Ventana pequeña con el nombre de la estructura + resaltado en el mapa
-function mostrarInfoEstructura(est) {
+function mostrarInfoEstructura(estructuras, opciones = {}) {
+    const lista = Array.isArray(estructuras) ? estructuras : [estructuras];
+    const primera = lista[0];
     ocultarSugerencias();
     ocultarPaneles();
     limpiarResaltadoMapa();
-    document.getElementById('input-busqueda').value = est.nombre;
-    est.ids.forEach(id => marcarSalon(id, 'salon-resaltado'));
-    const tipo = estructurasConfig.tipos[est.tipo] || {};
-    document.getElementById('info-tipo').textContent = tipo.etiqueta || 'Lugar';
-    document.getElementById('info-nombre').textContent = est.nombre;
+    document.getElementById('input-busqueda').value = primera.nombre;
+    lista.forEach(est => est.ids.forEach(id => marcarSalon(id, 'salon-resaltado')));
+    const tipo = estructurasConfig.tipos[primera.tipo] || {};
+    const cuantas = lista.length > 1 ? ` · ${lista.length} en el mapa` : '';
+    document.getElementById('info-tipo').textContent = (tipo.etiqueta || 'Lugar') + cuantas;
+    document.getElementById('info-nombre').textContent = primera.nombre;
     document.getElementById('panel-info').classList.add('activo');
+    abrirCapaHistorial();
+    if (opciones.encuadrar !== false) encuadrarElementos(elementosResaltados);
 }
 
-// Resalta todas las estructuras de un tipo (cantinas, baños, papelerías...)
 function resaltarEstructurasPorTipo(clave) {
     const tipo = estructurasConfig.tipos[clave] || {};
     const lista = estructurasConfig.estructuras.filter(e => e.tipo === clave && e.ids.length);
@@ -761,9 +798,9 @@ function resaltarEstructurasPorTipo(clave) {
     ocultarPaneles();
     lista.forEach(e => e.ids.forEach(id => marcarSalon(id, 'salon-resaltado')));
     cerrarMenuDrawer();
+    encuadrarElementos(elementosResaltados);
 }
 
-// Opciones del menú: salones libres + los tipos marcados como "buscable" en estructuras.json
 function construirOpcionesBusqueda() {
     const contenedor = document.getElementById('opciones-busqueda');
     if (!contenedor) return;
@@ -783,10 +820,7 @@ function resaltarSeleccion() {
     else resaltarEstructurasPorTipo(valor);
 }
 
-// --- 6. CÁLCULO DE HORA CARACAS (UTC-4) Y SALONES DISPONIBLES ---
 function obtenerTiempoCaracas() {
-    if (MODO_PRUEBA) return { diaClave: PROBAR_DIA, totalMinutos: parseBloqueAMinutos(PROBAR_BLOQUE) };
-
     const ahora = new Date();
     const opciones = { timeZone: 'America/Caracas', hour12: false, weekday: 'short', hour: '2-digit', minute: '2-digit' };
     const formateador = new Intl.DateTimeFormat('es-VE', opciones);
@@ -813,7 +847,6 @@ function parseBloqueAMinutos(bloqueStr) {
 }
 
 function obtenerBloqueHoraActual() {
-    if (MODO_PRUEBA) return PROBAR_BLOQUE;
     const { totalMinutos } = obtenerTiempoCaracas();
     const bloques = [
         { clave: "0800", inicio: 480, fin: 529 }, { clave: "0850", inicio: 530, fin: 579 },
@@ -851,21 +884,25 @@ function resaltarSalonesLibresAhora() {
 
     salonesRegistradosEnMapa.forEach(idSalon => {
         if (estructuraPorId.has(idSalon)) return; 
-        if (salonesExcluidosSet.has(idSalon)) return; // Salta los excluidos
+        if (salonesExcluidosSet.has(idSalon)) return;
         
         if (!salonesOcupados.has(idSalon)) marcarSalon(idSalon, 'salon-libre');
     });
     cerrarMenuDrawer();
+    encuadrarElementos(elementosResaltados);
 }
 
-// --- 7. MENÚ HAMBURGUESA / DRAWER ---
 function inicializarMenuOpciones() {
     const btnHamburguesa = document.getElementById('btn-hamburguesa');
     const btnCerrarDrawer = document.getElementById('btn-cerrar-drawer');
     const overlay = document.getElementById('overlay-drawer');
     const btnResaltar = document.getElementById('btn-resaltar');
 
-    if (btnHamburguesa) btnHamburguesa.addEventListener('click', () => { document.getElementById('panel-opciones').classList.add('activo'); if (overlay) overlay.classList.add('activo'); });
+    if (btnHamburguesa) btnHamburguesa.addEventListener('click', () => {
+        document.getElementById('panel-opciones').classList.add('activo');
+        if (overlay) overlay.classList.add('activo');
+        abrirCapaHistorial();
+    });
     if (btnCerrarDrawer) btnCerrarDrawer.addEventListener('click', cerrarMenuDrawer);
     if (overlay) overlay.addEventListener('click', cerrarMenuDrawer);
     if (btnResaltar) btnResaltar.addEventListener('click', resaltarSeleccion);
@@ -876,13 +913,13 @@ function cerrarMenuDrawer() {
     const overlay = document.getElementById('overlay-drawer');
     if (panel) panel.classList.remove('activo');
     if (overlay) overlay.classList.remove('activo');
+    sincronizarHistorial();
 }
 
-// --- 8. INICIALIZACIÓN GENERAL ---
 document.addEventListener('DOMContentLoaded', async () => {
     inicializarBuscador();
     inicializarMenuOpciones();
-    await Promise.all([cargarSVGMapa(), cargarHorarios(), cargarEstructuras()]); // en paralelo
+    await Promise.all([cargarSVGMapa(), cargarHorarios(), cargarEstructuras()]);
     procesarEstructuras();
     procesarSugerencias();
     construirOpcionesBusqueda();

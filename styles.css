@@ -45,34 +45,6 @@ body, html {
     touch-action: none;
 }
 
-.salon, .salon * {
-    transition: filter 0.25s ease, stroke-width 0.25s ease;
-}
-
-/* Resaltado con alto impacto visual para que resalte al instante en cualquier vista */
-.salon-resaltado, .salon-resaltado * {
-    filter: brightness(1.6) saturate(1.8) contrast(1.1) !important;
-    stroke-width: 4.5px !important;
-}
-
-.salon-libre, .salon-libre * {
-    filter: brightness(1.7) saturate(1.9) contrast(1.15) !important;
-    stroke-width: 4.5px !important;
-}
-
-/* Contornos superiores para delimitar claramente el bloque seleccionado */
-.contorno-resaltado {
-    fill: none !important;
-    stroke: #000000 !important;
-    stroke-width: 4.5px !important;
-}
-
-.contorno-libre {
-    fill: none !important;
-    stroke: #000000 !important;
-    stroke-width: 4.5px !important;
-}
-
 .contenedor-buscador {
     position: fixed;
     top: 15px;
@@ -174,7 +146,6 @@ body, html {
     color: #70757a;
 }
 
-/* Panel emergente principal */
 .panel-emergente {
     position: fixed;
     top: 75px;
@@ -200,7 +171,6 @@ body, html {
     pointer-events: auto;
 }
 
-/* Estado minimizado lateral */
 .panel-emergente.minimizado {
     transform: translateX(calc(-100% - 25px)) !important;
     opacity: 1;
@@ -211,7 +181,6 @@ body, html {
     pointer-events: none;
 }
 
-/* Botón de cerrar panel (X) */
 .btn-cerrar {
     position: absolute;
     top: 10px;
@@ -237,7 +206,6 @@ body, html {
     color: #202124;
 }
 
-/* Pestaña flotante lateral estilo Google Maps */
 .btn-minimizar-lateral {
     position: absolute;
     top: 50%;
@@ -515,20 +483,6 @@ body, html {
     display: block;
 }
 
-/* Contornos superiores para mantener la nitidez del marco engrosado */
-.contorno-resaltado {
-    fill: none !important;
-    stroke: #202124 !important;
-    stroke-width: 4px !important;
-}
-
-.contorno-libre {
-    fill: none !important;
-    stroke: #202124 !important;
-    stroke-width: 4px !important;
-}
-
-/* Ventana pequeña con el nombre de una estructura */
 .panel-info {
     position: fixed;
     top: 75px;
@@ -569,7 +523,6 @@ body, html {
     line-height: 1.3;
 }
 
-/* Selector de qué resaltar */
 .opciones-busqueda {
     display: flex;
     flex-direction: column;
@@ -603,4 +556,45 @@ body, html {
 
 .opcion-busqueda input {
     accent-color: #1a73e8;
+}
+
+:root {
+    --resalte: #1a73e8;
+    --resalte-relleno: #aecbfa;
+    --libre: #00897b;
+    --libre-relleno: #80cbc4;
+}
+
+.salon, .salon * {
+    transition: fill 0.25s ease;
+}
+
+.salon-resaltado, .salon-resaltado * { fill: var(--resalte-relleno) !important; }
+.salon-libre, .salon-libre * { fill: var(--libre-relleno) !important; }
+
+.contorno-resaltado, .contorno-libre,
+.halo-resaltado, .halo-libre {
+    fill: none !important;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.contorno-resaltado { stroke: var(--resalte) !important; stroke-width: 5px !important; }
+.contorno-libre     { stroke: var(--libre) !important;   stroke-width: 5px !important; }
+
+.halo-resaltado, .halo-libre {
+    stroke-width: 16px !important;
+    stroke-opacity: 0.25;
+    animation: respirar 1.3s ease-in-out 2;
+}
+.halo-resaltado { stroke: var(--resalte) !important; }
+.halo-libre     { stroke: var(--libre) !important; }
+
+@keyframes respirar {
+    0%, 100% { stroke-opacity: 0.25; }
+    50%      { stroke-opacity: 0.65; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .halo-resaltado, .halo-libre { animation: none; }
 }
