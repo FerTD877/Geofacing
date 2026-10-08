@@ -40,7 +40,7 @@
     }
   },
   "salonesExcluidosLibres": [
-    "AUDITORIO", "DECANATO", "SD3", "SD2", "SD1", "JLN", "AD9", "AD4", "AD3", "EDIFICIO", "LM1", "HP2", "LBX", "FALTA", "LAB.Q", "DEP2"
+    "AUDITORIO", "DECANATO", "SD3", "SD2", "SD1", "JLN", "AD9", "AD4", "AD3", "EDIFICIO", "LM1", "HP2", "LBX", "LQG", "DEP2", "LF1A", "LF1B", "LF2"
   ],
   "estructuras": [
     {
@@ -323,6 +323,18 @@
       "nombre": "Uniformes",
       "tipo": "otro",
       "ids": ["UNIFORMES"],
+      "salones": []
+    },
+    {
+      "nombre": "LABORATORIO DE PROCESOS",
+      "tipo": "otro",
+      "ids": ["HP2"],
+      "salones": []
+    },
+    {
+      "nombre": "LABORATORIO DE MAQUINAS",
+      "tipo": "otro",
+      "ids": ["LM1"],
       "salones": []
     }
   ]

@@ -2,25 +2,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="color-scheme" content="only light">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GeoFacing</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="icon" type="image/png" href="favicon.png?v=3">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="GeoFacing">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
+    <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
+        <div class="carga-contenido">
+            <img src="logo_geofacing.png" alt="GeoFacing" class="carga-logo" width="360" height="266">
+            <div class="carga-spinner" aria-hidden="true"></div>
+            <p id="carga-titulo" class="carga-titulo">Cargando el mapa…</p>
+            <p id="carga-detalle" class="carga-detalle"></p>
+            <button id="btn-reintentar-mapa" class="btn-consultar btn-reintentar" hidden>Reintentar</button>
+        </div>
+    </div>
+
     <div id="modulo-mapa" class="mapa-fondo">
         <div class="mapa-placeholder"></div>
     </div>
 
     <div class="contenedor-buscador">
         <div class="buscador-flotante">
-            <input type="text" id="input-busqueda" placeholder="Buscar salón, profesor, materia..." autocomplete="off">
+            <input type="text" id="input-busqueda" placeholder="Buscar salón, profesor, materia..." autocomplete="off" enterkeyhint="search">
             <button id="btn-buscar">🔍</button>
         </div>
         <div id="sugerencias-box" class="sugerencias-box oculto"></div>
     </div>
 
     <aside id="modulo-resultados" class="panel-emergente">
+        <button id="asa-hoja" class="asa-hoja" aria-label="Subir el horario"><span class="asa-barra"></span></button>
         <button id="btn-minimizar-panel" class="btn-minimizar-lateral" onclick="alternarMinimizarPanel()" aria-label="Ocultar panel">‹</button>
         <button id="btn-cerrar-panel" class="btn-cerrar">&times;</button>
         <div class="panel-scroll">
@@ -51,17 +70,48 @@
                 <h4>🔎 Buscar en el mapa</h4>
                 <p class="subtexto-drawer">Elige qué quieres ubicar y púlsalo para resaltarlo en el mapa. «Salones libres» usa la hora de Venezuela (UTC-4).</p>
                 <div id="opciones-busqueda" class="opciones-busqueda"></div>
+                <div id="filtro-duracion" class="filtro-duracion">
+                    <label for="select-duracion">Que sigan libres al menos:</label>
+                    <select id="select-duracion">
+                        <option value="0">Cualquier tiempo</option>
+                        <option value="30">30 minutos</option>
+                        <option value="60">1 hora</option>
+                        <option value="120">2 horas</option>
+                    </select>
+                </div>
                 <button id="btn-resaltar" class="btn-consultar">Resaltar en el mapa</button>
             </div>
             <hr class="separador-drawer">
+            <div id="seccion-instalar" class="seccion-drawer" hidden>
+                <h4>📲 Instalar en el teléfono</h4>
+                <p id="texto-instalar" class="subtexto-drawer"></p>
+                <button id="btn-instalar" class="btn-consultar" hidden>Instalar GeoFacing</button>
+            </div>
+            <hr id="sep-instalar" class="separador-drawer" hidden>
             <div class="seccion-drawer">
-                <h4>ℹ️️ Acerca de la Aplicación</h4>
+                <h4>ℹ️ Acerca de la Aplicación</h4>
                 <p class="subtexto-drawer">Sistema interactivo de consulta de horarios y ubicación para la Facultad de Ingeniería (UC).</p>
             </div>
         </div>
     </div>
 
+    <div class="controles-mapa">
+        <button id="btn-vista-inicial" class="btn-control btn-control-redondo" title="Volver a la vista inicial" aria-label="Volver a la vista inicial" disabled>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/></svg>
+        </button>
+        <div class="controles-zoom">
+            <button id="btn-zoom-mas" class="btn-control" title="Acercar" aria-label="Acercar" disabled>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button id="btn-zoom-menos" class="btn-control" title="Alejar" aria-label="Alejar" disabled>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="avisos" class="avisos" role="status" aria-live="polite"></div>
+
     <div id="overlay-drawer" class="overlay-drawer"></div>
-    <script src="app.js"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>
