@@ -1,4 +1,4 @@
-const VERSION = '2026-10-08-1';
+const VERSION = '2026-10-16-1';
 
 const CACHE_APP = 'geofacing-app-' + VERSION;
 const CACHE_DATOS = 'geofacing-datos';
