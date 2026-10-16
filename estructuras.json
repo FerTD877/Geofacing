@@ -131,7 +131,7 @@
       "nombre": "Departamento de Computación",
       "tipo": "departamento",
       "ids": ["DEP.C"],
-      "salones": []
+      "salones": ["LC1", "LC2"]
     },
     {
       "nombre": "Departamento de Física",
